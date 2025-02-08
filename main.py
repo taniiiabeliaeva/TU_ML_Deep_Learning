@@ -38,10 +38,10 @@ def get_args():
     )
 
     parser.add_argument("--model", type=str, default="lstm")
-    parser.add_argument("--dataset", type=str, default="wikitext-2")
+    parser.add_argument("--dataset", type=str, default="poems_txt")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--max_length", type=int, default=20)
+    parser.add_argument("--max_length", type=int, default=50)
     parser.add_argument("--embed-dim", type=int, default=512)
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--min-text-length", type=int, default=200)
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     Path("trained_models").mkdir(parents=True, exist_ok=True)
 
     best_valid_loss = float("inf")
+    
     for epoch in range(cfg.epochs):
-
         # Training
         model.train()
         trainer.train_validate_epoch(loaders["train"], epoch, "train")
@@ -155,9 +155,11 @@ if __name__ == "__main__":
         # Validation
         model.eval()
         with torch.no_grad():
-            val_loss = trainer.train_validate_epoch(
-                loaders["validation"], epoch, "validation"
-            )
+            val_loss = trainer.train_validate_epoch(loaders["validation"], epoch, "validation")
+
+        # Stop training if early stopping is triggered
+        if val_loss == "stop":
+            break
 
         # Save the best model
         if val_loss < best_valid_loss:
