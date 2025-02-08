@@ -1,0 +1,10 @@
+torch
+torchtext
+torchmetrics
+ConfigArgParse
+transformers
+datasets
+xlstm
+scikit-learn
+pandas
+numpy
