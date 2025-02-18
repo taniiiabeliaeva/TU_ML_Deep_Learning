@@ -1,0 +1,7 @@
+{
+    "0.0005": {
+        "val_loss": 6.904125054677327,
+        "best_model": "trained_models/lstm_poetryfoundation_lr=0_0005_best.pt",
+        "total_runtime_sec": 497.6
+    }
+}
