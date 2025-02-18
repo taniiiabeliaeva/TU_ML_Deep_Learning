@@ -1,6 +1,6 @@
 import subprocess
 
-datasets = ["poetryfoundation", "poems_txt"]
+datasets = ["poetryfoundation"]
 lrs = ["1e-3", "1e-4", "5e-4"]
 models = ["lstm", "transformer"]
 

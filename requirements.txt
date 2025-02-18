@@ -8,3 +8,4 @@ xlstm
 scikit-learn
 pandas
 numpy
+rouge-score

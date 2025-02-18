@@ -1,6 +1,6 @@
-# Next-word prediction (Language Modelling) using Deep Learning
+# Text Generation Project
 
-This repository contains the implementation of a Next-word prediction project using LSTM, Transforme machine learning models
+This repository contains the implementation of a text generation project using LSTM, Transforme machine learning models for next-word prediction. Follow the instructions below to set up your environment, install dependencies, and run the project.
 
 ## Setup Instructions
 
@@ -34,10 +34,10 @@ pip install -r requirements.txt
 You can change the parameters for the models and training process in the `config.yaml` file. This file contains various settings that control the behavior of the training scripts.
 
 ### 4. Run the Script
-Finally, run the `run.py` bash script to start the training process:
+Run the `run.py`to start the training process with giving parameters:
 ```sh
 python run.py
 ```
 
 ### 5. Qualitative results analysis
-Once the training phase is completed, to evaluate the predictions qualitatively, we include the Jupyter notebook `analysis.ipynb` where the trained models generate next-word predictions for given input sequences. You can use this notebook to analyze the qualitative results.
+Once the training phase is completed, to evaluate the predictions qualitatively, we include the Jupyter notebook `analysis.ipynb` where the trained models generate next-word predictions for given input sequences.

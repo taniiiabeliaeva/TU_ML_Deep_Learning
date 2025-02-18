@@ -1,8 +1,7 @@
 model: 'lstm'
 batch-size: 32
 embed-dim: 512
-epochs: 10
-lr: 1e-4
-max_length: 20
+epochs: 30
+max_length: 50
 min-text-length: 100
 chained-scheduler: True

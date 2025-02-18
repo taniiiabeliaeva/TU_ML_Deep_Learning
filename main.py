@@ -1,15 +1,14 @@
 import os
+import time
+import json
 from pathlib import Path
 import configargparse
-
-
 
 import torchtext
 import torchmetrics
 
 from dataset.dataset import LoaderConstructor
-from dataset.dataset import create_poetryfoundation_dataset, create_poems_txt_dataset
-
+from dataset.dataset import create_poetryfoundation_dataset
 
 import torch
 import torch.nn as nn
@@ -38,7 +37,7 @@ def get_args():
     )
 
     parser.add_argument("--model", type=str, default="lstm")
-    parser.add_argument("--dataset", type=str, default="poems_txt")
+    parser.add_argument("--dataset", type=str, default="poetryfoundation")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--max_length", type=int, default=50)
@@ -78,8 +77,6 @@ if __name__ == "__main__":
     # Load the dataset
     if cfg.dataset == "poetryfoundation":
         dataset = create_poetryfoundation_dataset(os.getcwd())
-    elif cfg.dataset == "poems_txt":
-        dataset = create_poems_txt_dataset(os.getcwd())
 
     # Construct the dataloaders
     lc = LoaderConstructor(
@@ -87,11 +84,9 @@ if __name__ == "__main__":
         batch_size=cfg.batch_size,
         max_length=cfg.max_length,
         labels_sequence=False,
-        min_freq=1 if cfg.dataset == "alicewonderland" else 3,
+        min_freq=3,
     )
-    loaders = {}
-    for loader in ["train", "validation", "test"]:
-        loaders[loader] = lc.construct_loader(split=loader)
+    loaders = {split: lc.construct_loader(split=split) for split in ["train", "validation", "test"]}
 
     input_size = loaders["train"].dataset.input_size
     vocab_size = lc.vocab_size
@@ -107,7 +102,6 @@ if __name__ == "__main__":
         output_dim=output_size,
         device=device,
     )
-
 
     # Initialize the optimizer, loss function, and accuracy metric
     optimizer = optim.Adam(model.parameters(), lr=cfg.lr)
@@ -139,40 +133,59 @@ if __name__ == "__main__":
             warmup_steps=warmup_steps,
         )
 
-    # Train the model
-    model_filename = f"trained_models/{cfg.model}_{cfg.dataset}_lr={str(cfg.lr).replace('.', '_')}_best.pt"
+   # Track training start time
+    start_time = time.time()
 
+    # Model filenames
+    model_filename = f"trained_models/{cfg.model}_{cfg.dataset}_lr={str(cfg.lr).replace('.', '_')}_best.pt"
+    stats_filename = f"trained_models/{cfg.model}_{cfg.dataset}_lr={str(cfg.lr).replace('.', '_')}_stats.json" 
+    
     # Create the directory if it doesn't exist
     Path("trained_models").mkdir(parents=True, exist_ok=True)
 
     best_valid_loss = float("inf")
-    
+    training_stats = {}
+
     for epoch in range(cfg.epochs):
-        # Training
-        model.train()
-        trainer.train_validate_epoch(loaders["train"], epoch, "train")
+            # Training
+            model.train()
+            trainer.train_validate_epoch(loaders["train"], epoch, "train")
 
-        # Validation
-        model.eval()
-        with torch.no_grad():
-            val_loss = trainer.train_validate_epoch(loaders["validation"], epoch, "validation")
+            # Validation
+            model.eval()
+            with torch.no_grad():
+                val_loss = trainer.train_validate_epoch(loaders["validation"], epoch, "validation")
 
-        # Stop training if early stopping is triggered
-        if val_loss == "stop":
-            break
+            # Stop training if early stopping is triggered
+            if val_loss == "stop":
+                break
 
-        # Save the best model
-        if val_loss < best_valid_loss:
-            best_valid_loss = val_loss
-            torch.save(model.state_dict(), model_filename)
-            print(f"Model improved, saving model")
+            # Save the best model
+            if val_loss < best_valid_loss:
+                best_valid_loss = val_loss
+                torch.save(model.state_dict(), model_filename)
+                print(f"Model improved, saving model")
 
-        if scheduler:
-            scheduler.step()
+            if scheduler:
+                scheduler.step()
 
-    torch.save(model.state_dict(), model_filename.replace("best", "lastepoch"))
+    # Track training end time
+    end_time = time.time()
+    total_time = round(end_time - start_time, 2)
 
-    # Load the best model
+    # Save training statistics
+    training_stats[cfg.lr] = {
+        "val_loss": best_valid_loss,
+        "best_model": model_filename,
+        "total_runtime_sec": total_time,
+    }
+
+    with open(stats_filename, "w") as f:
+        json.dump(training_stats, f, indent=4)
+
+    print(f" Training statistics saved to `{stats_filename}`")
+
+    # Load the best model for final evaluation
     model.load_state_dict(torch.load(model_filename))
 
     # Test the model
