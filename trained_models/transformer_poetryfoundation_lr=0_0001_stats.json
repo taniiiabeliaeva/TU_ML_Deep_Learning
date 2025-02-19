@@ -1,7 +1,8 @@
 {
     "0.0001": {
-        "val_loss": 6.765276193618774,
+        "val_loss": 6.863685159122243,
+        "val_accuracy": 0.12316176295280457,
         "best_model": "trained_models/transformer_poetryfoundation_lr=0_0001_best.pt",
-        "total_runtime_sec": 1126.45
+        "total_runtime_sec": 594.18
     }
 }

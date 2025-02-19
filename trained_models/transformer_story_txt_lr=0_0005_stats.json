@@ -1,0 +1,8 @@
+{
+    "0.0005": {
+        "val_loss": 1.1431541442871094,
+        "val_accuracy": 0.9375,
+        "best_model": "trained_models/transformer_story_txt_lr=0_0005_best.pt",
+        "total_runtime_sec": 57.82
+    }
+}

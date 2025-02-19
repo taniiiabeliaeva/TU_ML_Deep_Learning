@@ -65,6 +65,9 @@ class Trainer:
         # Calculate F1 score
         f1 = f1_score(all_labels, all_preds, average="weighted")
         
+        # Save Accuracy
+        accuracy = self.accuracy.compute().item()
+        
         print(f"[{split.upper()} {epoch}]: Loss: {avg_loss}, Accuracy: {self.accuracy.compute()}, F1 Score: {f1:.4f}")
 
         # Early stopping check (only on validation)
@@ -79,6 +82,6 @@ class Trainer:
 
             if self.epochs_no_improve >= self.patience:
                 print(" Early stopping.")
-                return "stop"
+                return "stop", "stop"
 
-        return avg_loss
+        return avg_loss, accuracy

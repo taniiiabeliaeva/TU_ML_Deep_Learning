@@ -9,6 +9,9 @@ import re
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.data.utils import get_tokenizer
 
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
 
 def create_poetryfoundation_dataset(path):
     """Load Poetry Foundation dataset (first 2 columns)"""
@@ -38,9 +41,9 @@ def create_poetryfoundation_dataset(path):
     return data_splits
 
 
-def create_poems_txt_dataset(path):
-    """Load poems from a text file"""
-    data_path = Path(path) / "data" / "poems.txt"
+def create_story_txt_dataset(path):
+    """Load story from a text file"""
+    data_path = Path(path) / "data" / "story.txt"
     with open(data_path, "r", encoding="utf-8") as file:
         text = file.read().split("\n")
 
@@ -90,8 +93,10 @@ class TorchtextTokenizer:
 
     def create_tokens(self, dataset):
         def clean_text(text):
-            cleaned_text = "".join([c if c.isalpha() else " " for c in text])
-            cleaned_text = re.sub(r"\b[b-hj-z]\b", "", cleaned_text)
+            stop_words = set(stopwords.words('english'))
+            words = text.split()
+            filtered_words = [word for word in words if word.lower() not in stop_words]
+            cleaned_text = ' '.join(filtered_words)
             return cleaned_text.strip()
 
         tokenised_samples = []

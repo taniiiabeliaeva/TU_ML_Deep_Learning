@@ -8,7 +8,7 @@ import torchtext
 import torchmetrics
 
 from dataset.dataset import LoaderConstructor
-from dataset.dataset import create_poetryfoundation_dataset
+from dataset.dataset import create_poetryfoundation_dataset, create_story_txt_dataset
 
 import torch
 import torch.nn as nn
@@ -37,7 +37,7 @@ def get_args():
     )
 
     parser.add_argument("--model", type=str, default="lstm")
-    parser.add_argument("--dataset", type=str, default="poetryfoundation")
+    parser.add_argument("--dataset", type=str, default="story_txt")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--max_length", type=int, default=50)
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     # Load the dataset
     if cfg.dataset == "poetryfoundation":
         dataset = create_poetryfoundation_dataset(os.getcwd())
+    elif cfg.dataset == "story_txt":
+        dataset = create_story_txt_dataset(os.getcwd())
 
     # Construct the dataloaders
     lc = LoaderConstructor(
@@ -154,7 +156,7 @@ if __name__ == "__main__":
             # Validation
             model.eval()
             with torch.no_grad():
-                val_loss = trainer.train_validate_epoch(loaders["validation"], epoch, "validation")
+                val_loss, val_accuracy = trainer.train_validate_epoch(loaders["validation"], epoch, "validation")
 
             # Stop training if early stopping is triggered
             if val_loss == "stop":
@@ -163,6 +165,7 @@ if __name__ == "__main__":
             # Save the best model
             if val_loss < best_valid_loss:
                 best_valid_loss = val_loss
+                best_accuracy = val_accuracy
                 torch.save(model.state_dict(), model_filename)
                 print(f"Model improved, saving model")
 
@@ -176,6 +179,7 @@ if __name__ == "__main__":
     # Save training statistics
     training_stats[cfg.lr] = {
         "val_loss": best_valid_loss,
+        "val_accuracy": best_accuracy,
         "best_model": model_filename,
         "total_runtime_sec": total_time,
     }
