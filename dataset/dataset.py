@@ -9,10 +9,6 @@ import re
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.data.utils import get_tokenizer
 
-import nltk
-from nltk.corpus import stopwords
-nltk.download('stopwords')
-
 def create_poetryfoundation_dataset(path):
     """Load Poetry Foundation dataset (first 2 columns)"""
 
@@ -93,10 +89,9 @@ class TorchtextTokenizer:
 
     def create_tokens(self, dataset):
         def clean_text(text):
-            stop_words = set(stopwords.words('english'))
-            words = text.split()
-            filtered_words = [word for word in words if word.lower() not in stop_words]
-            cleaned_text = ' '.join(filtered_words)
+            cleaned_text = text.strip()
+            if cleaned_text and not cleaned_text[-1].isalnum():
+                cleaned_text = cleaned_text[:-1] 
             return cleaned_text.strip()
 
         tokenised_samples = []
@@ -109,7 +104,7 @@ class TorchtextTokenizer:
     def create_vocab(self, tokenised_samples, min_freq):
         self.train_vocab = build_vocab_from_iterator(
             tokenised_samples,
-            min_freq=min_freq,
+            min_freq=1,
             specials=["<pad>", "<oov>"],
             special_first=True,
         )
@@ -126,12 +121,11 @@ class TorchtextTokenizer:
         return self.vocab_size, self.output_size
 
     def pad_sequences(self, tokenised_samples):
-        # Pad the sequences to the max_length
         for i, sample in enumerate(tokenised_samples):
             if len(sample) < self.max_length:
-                tokenised_samples[i] = ["<pad>"] * (
-                    self.max_length - len(sample)
-                ) + sample
+                tokenised_samples[i] = ["<pad>"] * (self.max_length - len(sample)) + sample
+            elif len(sample) > self.max_length:
+                tokenised_samples[i] = sample[-self.max_length:]
         return tokenised_samples
 
     def create_subsequences(self, tokenised_samples, stride=20):
@@ -143,6 +137,7 @@ class TorchtextTokenizer:
                 sequences.append(sample[current : current + self.max_length])
                 current += stride
         return sequences
+
 
     def tokenize(self, tokenised_samples):
         # Convert the sequences to index tensors
@@ -175,18 +170,26 @@ class TorchtextTokenizer:
 
     def encode(self, samples):
         stoi = self.train_vocab.get_stoi()
-        samples = [
+        encoded_samples = [
             [stoi[token] if token in stoi else stoi["<oov>"] for token in sample]
             for sample in samples
         ]
-        return torch.tensor(samples)
+        return torch.tensor(encoded_samples, dtype=torch.long)
 
     def decode(self, tokens, target=True):
-        if target:
-            token_dict = self.target_vocab.get_itos()
-        else:
-            token_dict = self.train_vocab.get_itos()
-        return [token_dict[token] for token in tokens]
+        token_dict = self.target_vocab.get_itos() if target else self.train_vocab.get_itos()
+
+        decoded = []
+        for token in tokens:
+            if isinstance(token, torch.Tensor):
+                token = token.item()
+            if 0 <= token < len(token_dict):
+                word = token_dict[token]
+                decoded.append(word)
+            else:
+                word = "<unk>"
+                decoded.append(word)
+        return decoded
 
 
 class LoaderConstructor:

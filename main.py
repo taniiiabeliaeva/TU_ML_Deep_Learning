@@ -40,7 +40,7 @@ def get_args():
     parser.add_argument("--dataset", type=str, default="story_txt")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--max_length", type=int, default=50)
+    parser.add_argument("--max_length", type=int, default=20)
     parser.add_argument("--embed-dim", type=int, default=512)
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--min-text-length", type=int, default=200)
