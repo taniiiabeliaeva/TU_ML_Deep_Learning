@@ -98,7 +98,7 @@ class TorchtextTokenizer:
         for sample in dataset:
             clean_sample = clean_text(sample["text"])
             tokenised_samples.append(self.tokenizer(clean_sample))
-
+        
         return tokenised_samples
 
     def create_vocab(self, tokenised_samples, min_freq):

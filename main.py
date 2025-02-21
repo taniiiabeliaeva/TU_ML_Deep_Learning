@@ -187,7 +187,7 @@ if __name__ == "__main__":
     with open(stats_filename, "w") as f:
         json.dump(training_stats, f, indent=4)
 
-    print(f" Training statistics saved to `{stats_filename}`")
+    print(f" Training statistics saved to '{stats_filename}'")
 
     # Load the best model for final evaluation
     model.load_state_dict(torch.load(model_filename))

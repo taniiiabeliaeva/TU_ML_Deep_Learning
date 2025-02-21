@@ -12,7 +12,7 @@ class LSTM(nn.Module):
         hidden_dim,
         output_dim,
         num_layers,
-        dropout=0.2,
+        dropout=0.1,
     ):
         super(LSTM, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)

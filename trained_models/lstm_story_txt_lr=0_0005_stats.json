@@ -1,8 +1,8 @@
 {
     "0.0005": {
-        "val_loss": 4.72471284866333,
-        "val_accuracy": 0.375,
+        "val_loss": 4.557841777801514,
+        "val_accuracy": 0.4375,
         "best_model": "trained_models/lstm_story_txt_lr=0_0005_best.pt",
-        "total_runtime_sec": 9.03
+        "total_runtime_sec": 21.68
     }
 }
