@@ -10,18 +10,14 @@ from torchtext.vocab import build_vocab_from_iterator
 from torchtext.data.utils import get_tokenizer
 
 def create_poetryfoundation_dataset(path):
-    """Load Poetry Foundation dataset (first 2 columns)"""
+    """Load Poetry Foundation dataset"""
 
     data_path = Path(path) / "data" / "PoetryFoundationData.csv"
-    df = pd.read_csv(data_path, usecols=[0, 1])  # Read only first 2 columns
-    df.columns = ["title", "text"]
+    df = pd.read_csv(data_path, usecols=[0])  # Read only the poem except for the title
+    df.columns = ["text"]
 
-    # Convert both columns to strings to avoid type errors
-    df["title"] = df["title"].astype(str)
+    # Convert text columns to strings to avoid type errors
     df["text"] = df["text"].astype(str)
-
-    # Combine title and text
-    df["text"] = df["title"] + " " + df["text"]
 
     # Split dataset
     train_data, temp_data = train_test_split(df["text"], test_size=0.2, random_state=123)
